@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -15,6 +16,7 @@ public class GameManager : MonoBehaviour
     public int numberOfRows;
     public int numberOfColumns;
     public int xInRow;
+    public bool paused;
 
     public Column[] columns;
 
@@ -24,6 +26,7 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         player = Player.A;
+        paused = false;
 
         foreach (Column column in columns)
             column.onMouseDownEvent += OnColumnMouseDown;
@@ -31,7 +34,8 @@ public class GameManager : MonoBehaviour
 
     void OnColumnMouseDown(int index)
     {
-        DropPiece(index);
+        if (!paused)
+            DropPiece(index);
     }
 
     void DropPiece(int index)
@@ -90,6 +94,29 @@ public class GameManager : MonoBehaviour
     void NextMove()
     {
         player = (Player)(((int)player + 1) % 2);
+
+        if (player == Player.B)
+            StartCoroutine(aiMove());
+    }
+
+    IEnumerator aiMove()
+    {
+        paused = true;
+        yield return new WaitForSeconds(2); // pretending i am thinking...
+
+        int[] cols = Enumerable.Range(0, numberOfColumns).ToArray();
+        shuffle(cols);
+        print(String.Join(",", cols));
+        for (int i = 0; i < cols.Length; i++)
+        {
+            if (columns[cols[i]].FreePiece() > -1)
+            {
+                DropPiece(cols[i]);
+                paused = false;
+                yield break;
+            }
+        }
+        // no move possible
     }
 
     bool InRow(Player[] pieces)
@@ -132,6 +159,28 @@ public class GameManager : MonoBehaviour
                 else      // top left, bottom right
                     d[c - r + numberOfRows - 1].Add(columns[c].pieces[r]);
         return d;
+    }
+
+    void shuffle(int []arr) 
+    { 
+        System.Random r = new System.Random(); 
+          
+        // Start from the last element and 
+        // swap one by one. We don't need to 
+        // run for the first element  
+        // that's why i > 0 
+        for (int i = arr.Length - 1; i > 0; i--)  
+        {
+            // Pick a random index 
+            // from 0 to i 
+            int j = r.Next(0, i+1); 
+              
+            // Swap arr[i] with the 
+            // element at random index 
+            int temp = arr[i]; 
+            arr[i] = arr[j]; 
+            arr[j] = temp; 
+        } 
     }
 
     void DumpBoard()

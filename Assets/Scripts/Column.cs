@@ -26,21 +26,28 @@ public class Column : MonoBehaviour
         pieceGameObjects = new List<GameObject>();
     }
 
-    public bool DropPiece(Player player)
+    public int FreePiece()
     {
         for (int i = 0; i < numberOfPieces; i++)
-        {
             if (pieces[i] == Player.x)
-            {
-                pieces[i] = player;
+                return i;
+        return -1; // column full
+    }
 
-                if (player == Player.A)
-                    pieceGameObjects.Add(Instantiate(bluePiece, transform.position + (numberOfPieces + 1) * Vector3.up, Quaternion.identity));
-                else
-                    pieceGameObjects.Add(Instantiate(redPiece, transform.position + (numberOfPieces + 1) * Vector3.up, Quaternion.identity));
+    public bool DropPiece(Player player)
+    {
+        int freePiece = FreePiece();
 
-                return true;
-            }
+        if (freePiece > -1)
+        {
+            pieces[freePiece] = player;
+
+            if (player == Player.A)
+                pieceGameObjects.Add(Instantiate(bluePiece, transform.position + (numberOfPieces + 1) * Vector3.up, Quaternion.identity));
+            else
+                pieceGameObjects.Add(Instantiate(redPiece, transform.position + (numberOfPieces + 1) * Vector3.up, Quaternion.identity));
+
+            return true;
         }
         return false;
     }
